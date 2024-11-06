@@ -1,0 +1,192 @@
+const formDetalle = document.getElementById("formDetalle");
+
+const inputCantidad = document.getElementById("inputCantidad");
+const selectDescripcion = document.getElementById("selectDescripcion");
+const inputPUnitario = document.getElementById("inputPUnitario");
+const inputPTotal = document.getElementById("inputPTotal");
+const cuerpoTabla = document.getElementById("cuerpoTabla");
+const btnGuardar = document.getElementById("btnGuardar");
+
+// Variables de cliente y vehículo
+const cliente = document.getElementById("cliente");
+const telefono = document.getElementById("telefono");
+const cedula = document.getElementById("cedula");
+const fecha = document.getElementById("fecha");
+const correo = document.getElementById("correo");
+const placa = document.getElementById("placa");
+const marca = document.getElementById("marca");
+const modelo = document.getElementById("modelo");
+const anio = document.getElementById("anio");
+const chasis = document.getElementById("chasis");
+const formCabecera1 = document.getElementById("formCabecera1");
+const formVehiculo = document.getElementById("formVehiculo");
+
+let facturas = [];
+let arregloDetalle = [];
+let arregloProductos = [
+    { id: 1, nombre: "0" },
+    { id: 2, nombre: "Instalacion", precio: 1500.00 },
+    { id: 3, nombre: "Mensualidad", precio: 850.00 },
+    { id: 4, nombre: "Meses Atrazados", precio: 950.00 },
+    { id: 5, nombre: "Mensualidad por año completo", precio: 1500.00 }
+];
+
+// Función para formatear precios
+const formatearPrecio = (precio) => {
+    return `RD ${precio.toFixed(2).replace('.', ',')}`; // Formatear a RD y cambiar el punto por coma
+};
+
+const llenarProductos = () => {
+    arregloProductos.forEach((p) => {
+        const option = document.createElement("option");
+        option.value = p.id;
+        option.innerText = p.nombre;
+        selectDescripcion.appendChild(option);
+    });
+};
+
+llenarProductos();
+
+const getNombreProductoByid = (id) => {
+    const objProducto = arregloProductos.find((p) => p.id === +id);
+    return objProducto ? objProducto.nombre : "Producto no encontrado";
+};
+
+const getPrecioProductoByid = (id) => {
+    const objProducto = arregloProductos.find((p) => p.id === +id);
+    return objProducto ? objProducto.precio : 0;
+};
+
+// Evento para actualizar el precio unitario y el precio total al cambiar la descripción
+selectDescripcion.onchange = () => {
+    const precio = getPrecioProductoByid(selectDescripcion.value);
+    inputPUnitario.value = precio; // Precio sin formatear para cálculo
+    actualizarPrecioTotal(); // Llamamos a la función para actualizar el precio total
+};
+
+// Evento para actualizar el precio total cuando cambia la cantidad
+inputCantidad.oninput = actualizarPrecioTotal;
+
+function actualizarPrecioTotal() {
+    const cantidad = parseFloat(inputCantidad.value) || 0; // Asegúrate de que cantidad sea un número
+    const precioUnitario = parseFloat(inputPUnitario.value) || 0; // Asegúrate de que precioUnitario sea un número
+    const total = cantidad * precioUnitario;
+    inputPTotal.value = formatearPrecio(total); // Mostrar precio total formateado
+}
+
+// Función para redibujar la tabla
+const redibujarTabla = () => {
+    cuerpoTabla.innerHTML = "";
+    arregloDetalle.forEach((detalle) => {
+        let fila = document.createElement("tr");
+        fila.innerHTML = `<td>${detalle.cant}</td>
+            <td>${getNombreProductoByid(detalle.descripcion)}</td>
+            <td>${formatearPrecio(detalle.pUnit)}</td>
+            <td>${formatearPrecio(detalle.pTotal)}</td>
+        `;
+        
+        let tdEliminar = document.createElement("td");
+        
+        let botonEliminar = document.createElement("button");
+        botonEliminar.classList.add("btn", "btn-danger");
+        botonEliminar.innerText = "Eliminar";
+        botonEliminar.onclick = () => {
+            eliminarDetalleByid(detalle.descripcion);
+        };
+        
+        tdEliminar.appendChild(botonEliminar);
+        fila.appendChild(tdEliminar);
+        cuerpoTabla.appendChild(fila);
+    });
+};
+
+// Función para eliminar lo que se agrega en la celda
+const eliminarDetalleByid = (id) => {
+    arregloDetalle = arregloDetalle.filter ((detalle) => {
+        return +id !== +detalle.descripcion;
+    });
+    redibujarTabla();
+};
+
+const agregarDetalle = (objDetalle) => {
+    const resultado = arregloDetalle.find((detalle) => +objDetalle.descripcion === +detalle.descripcion);
+    if (resultado) {
+        arregloDetalle = arregloDetalle.map((detalle) => {
+            if (+detalle.descripcion === +objDetalle.descripcion) {
+                return {
+                    cant: +detalle.cant + +objDetalle.cant,
+                    descripcion: detalle.descripcion,
+                    pTotal: (+detalle.cant + +objDetalle.cant) * +detalle.pUnit,
+                    pUnit: +detalle.pUnit,
+                };   
+            }
+            return detalle;
+        });
+    } else {
+        arregloDetalle.push(objDetalle);
+    }
+};
+
+// Evento para agregar detalle
+formDetalle.onsubmit = (e) => {
+    e.preventDefault();
+
+    // Creando el objeto detalle
+    const objDetalle = {
+        cant: inputCantidad.value,
+        descripcion: selectDescripcion.value,
+        pUnit: parseFloat(inputPUnitario.value), // Guardamos el valor sin formatear
+        pTotal: parseFloat(inputCantidad.value) * parseFloat(inputPUnitario.value),
+    };
+
+    agregarDetalle(objDetalle);
+    redibujarTabla();
+};
+
+// Evento para guardar factura
+btnGuardar.onclick = () => {
+    // Crear el objeto de la factura (cabecera)
+    let objFactura = {
+        nombre: cliente.value,
+        telefono: telefono.value,
+        cedula: cedula.value,
+        fecha: fecha.value,
+        correo: correo.value,
+        placa: placa.value,
+        marca: marca.value,
+        modelo: modelo.value,
+        ano: anio.value,
+        chasis: chasis.value,
+        detalle: arregloDetalle,
+    };
+
+    facturas.push(objFactura);
+    
+    // Limpiar campos
+    formCabecera1.reset();
+    formDetalle.reset();
+    formVehiculo.reset();
+    
+    // Guardar en el localStorage
+    localStorage.setItem("facturas", JSON.stringify(facturas));
+
+    // Borrar la tabla del tbody
+    arregloDetalle = [];
+    redibujarTabla();
+
+    // Crear el FormData para enviar
+    const formData = new FormData(formDetalle);
+    
+    // Enviar la solicitud al servidor
+    fetch('guardar_factura.php', {
+        method: 'POST',
+        body: formData,
+    })
+    .then(response => response.json())
+    .then(data => {
+        alert(data.message); // Mostrar mensaje
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
+};

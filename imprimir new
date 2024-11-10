@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Factura</title>
+    <link rel="stylesheet" href="./formulario.css" />
+</head>
+<body>
+
+<div class="factura-container">
+    <h1>NOMBRE DE LA EMPRESA</h1>
+    <hr>
+
+    <div class="section-title">Datos del Cliente</div>
+    <div class="info">Cliente: <?= isset($_GET['cliente']) ? htmlspecialchars($_GET['cliente']) : 'No especificado' ?></div>
+    <div class="info">Cédula: <?= isset($_GET['cedula']) ? htmlspecialchars($_GET['cedula']) : 'No especificado' ?></div>
+    <div class="info">Teléfono: <?= isset($_GET['telefono']) ? htmlspecialchars($_GET['telefono']) : 'No especificado' ?></div>
+    <div class="info">Fecha: <?= isset($_GET['fecha']) ? htmlspecialchars($_GET['fecha']) : 'No especificado' ?></div>
+    <div class="info">Correo: <?= isset($_GET['correo']) ? htmlspecialchars($_GET['correo']) : 'No especificado' ?></div>
+    
+    <div class="section-title">Monto Total</div>
+    <div class="info">Monto: RD$ <?= isset($_GET['monto']) ? htmlspecialchars($_GET['monto']) : 'No especificado' ?></div>
+
+    <!-- Botones para Imprimir y Generar QR -->
+    <div class="section-title">Acciones</div>
+    <button onclick="imprimirFactura()">Imprimir Factura</button>
+    <button onclick="generarQRCode()">Generar QR</button>
+
+    <!-- Contenedor para el QR (será mostrado solo cuando se haga clic en "Generar QR") -->
+    <div id="qrContainer" style="display: none;">
+        <div class="section-title">Código QR</div>
+        <img id="qrImage" src="" alt="Código QR">
+    </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/qrcode"></script>
+<script>
+    function imprimirFactura() {
+        window.print(); // Imprime la factura
+    }
+
+    function generarQRCode() {
+        // Usar el contenido de la factura para generar el QR (puedes personalizar la información)
+        const datosFactura = {
+            cliente: '<?= isset($_GET['cliente']) ? $_GET['cliente'] : '' ?>',
+            monto: '<?= isset($_GET['monto']) ? $_GET['monto'] : '' ?>'
+        };
+        
+        // Generar el código QR con la información de la factura
+        const qrCodeData = JSON.stringify(datosFactura); // Convertir los datos a una cadena JSON
+        const qrContainer = document.getElementById('qrContainer');
+        const qrImage = document.getElementById('qrImage');
+
+        // Mostrar el contenedor del QR
+        qrContainer.style.display = 'block';
+
+        // Generar y mostrar el QR
+        QRCode.toDataURL(qrCodeData, function (err, url) {
+            if (err) {
+                console.error('Error generando el código QR:', err);
+            } else {
+                qrImage.src = url;
+            }
+        });
+    }
+</script>
+
+</body>
+</html>

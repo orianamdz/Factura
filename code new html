@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de facturacion</title>
+    <link rel="stylesheet" href="./formulario.css" />
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body class="big-ling container">
+    <h1 class="display-4 text-danger">NOMBRE DE LA EMPRESA</h1>
+    <hr />
+<section class="row">
+    <div class="col">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title text-center">DATOS DEL CLIENTE</h3>
+            </div>
+            <div class="card-body">
+                <form class="row" id="formCabecera1" action="guardar_factura.php" method="GET">
+                    <!-- Datos del cliente -->
+                    <div class="form-group col-md-3">
+                        <label for="cliente">Cliente:</label>
+                        <input type="text" class="form-control" id="cliente" name="cliente" placeholder="Nombre completo" />
+                    </div>
+                    <div class="form-group col-md-3"><label for="cedula">Cédula:</label>
+                        <input type="text" class="form-control" id="cedula" name="cedula" pattern="\d{3}-\d{7}-\d{1}" placeholder="000-0000000-0" required
+                        title="El formato debe ser 000-0000000-0 (Ej: 001-2345678-9)" />
+                    </div>
+                    <div class="form-group col-md-3"><label for="telefono">Teléfono:</label>
+                        <input type="text" class="form-control" id="telefono" name="telefono" placeholder="Celular" />
+                    </div>
+                    <div class="form-group col-md-3"><label for="fecha">Fecha:</label>
+                        <input type="date" class="form-control" id="fecha" name="fecha" />
+                    </div>
+                    <div class="form-group col-md-3"><label for="correo">Correo:</label>
+                        <input type="email" class="form-control" id="correo" name="correo" placeholder="sistema@mail.com" />
+                    </div>
+
+                    <!-- Datos del vehículo -->
+                    <div class="form-group col-md-3"><label for="placa">Placa:</label>
+                        <input type="text" class="form-control" id="placa" name="placa" placeholder="Placa del vehículo" />
+                    </div>
+                    <div class="form-group col-md-3"><label for="marca">Marca:</label>
+                        <input type="text" class="form-control" id="marca" name="marca" placeholder="Marca del vehículo" />
+                    </div>
+                    <div class="form-group col-md-3"><label for="modelo">Modelo:</label>
+                        <input type="text" class="form-control" id="modelo" name="modelo" placeholder="Modelo del vehículo" />
+                    </div>
+                    <div class="form-group col-md-3"><label for="anio">Año:</label>
+                        <input type="text" class="form-control" id="anio" name="anio" placeholder="Año del vehículo" />
+                    </div>
+                    <div class="form-group col-md-3"><label for="chasis">Chasis:</label>
+                        <input type="text" class="form-control" id="chasis" name="chasis" placeholder="Número de chasis" />
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>  
+
+<!-- TERCERA CELDA PRECIOS -->
+            <section class="row mt-2">
+                <div class="col">
+                <div class="card text-center"> 
+                <div class="card-body">  
+                        <form class="row" id="formDetalle">
+                             <!-- Columna de cantidad -->
+                            <div class="form-group col-md-2"><label for="cantidad">Cantidad</label>
+                                <input type="number" name="cantidad" class="form-control" id="inputCantidad"/>
+                            </div>
+                    <!-- Columna de descripción -->
+                            <div class="form-group col-md-4"><label for="descripcion">Descripción</label>
+                                <select id="selectDescripcion" class="form-control">
+                                        <!-- Opciones se generarán desde el arreglo -->
+                                </select>
+                            </div>
+                    <!-- Columna de precio unitario -->
+                            <div class="form-group col-md-2">
+                                <label for="pUnit">P. Unit.</label>
+                                <input type="number" name="pUnit" class="form-control" id="inputPUnitario" disabled />
+                            </div>
+                    <!-- Columna de precio total -->
+                             <div class="form-group col-md-2">
+                                <label for="pTotal">P. Total</label>
+                                <input type="number" name="pTotal" class="form-control" id="inputPTotal" disabled/>
+                            </div>
+                    <!-- Botón centrado -->
+                                <div class="form-group col-md-2 d-flex align-items-end">
+                                    <button class="btn btn-primary w-100" type="submit">Agregar</button>
+                                </div>
+                        </form>
+                </div>
+                </div>
+                </div>
+            </section>
+         <!-- Nueva sección para el botón de guardar -->
+         <section class="row mt-4">
+            <div class="col text-left">
+                <button class="btn btn-primary w-50" id="btnGuardar">Generar Factura</button>
+            </div>
+         </section>
+
+        <div class="row">
+            <div class="col">
+                <table class="table text-center">
+                    <thead>
+                        <tr>
+                            <th>Cantidad</th>
+                            <th>Descripción</th>
+                            <th>P. Unitario</th>
+                            <th>P. Total</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cuerpoTabla">
+                        <!-- Aquí irán las filas de la tabla dinámicamente -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <script src="./js/cod.js"></script>
+
+    <script>
+       document.getElementById('btnGuardar').addEventListener('click', function (e) {
+        e.preventDefault();
+        
+
+        // Crear un FormData para obtener los datos del formulario del cliente y del vehículo
+        const formCabecera = new FormData(document.getElementById('formCabecera1'));
+        const formDetalle = new FormData(document.getElementById('formDetalle'));
+        
+        // Crear un objeto para almacenar todos los datos
+        let datosFactura = {};
+        
+        // Añadir los datos de 'formCabecera' al objeto 'datosFactura'
+        for (let [key, value] of formCabecera.entries()) {
+            datosFactura[key] = value;
+        }
+        
+        // Obtener todos los valores de 'pTotal' de las filas de la tabla
+        let totalMonto = 0;
+        // Añadir el monto total a los datos de la factura
+        datosFactura['monto'] = totalMonto;
+
+        // Verificar si los datos se están guardando correctamente
+        console.log(datosFactura);
+        
+        // Construir la URL para redirigir a imprimir.php con parámetros de GET
+        const queryString = new URLSearchParams(datosFactura).toString();
+        console.log(queryString); // Verificar la URL generada
+        
+        // Abrir en una nueva pestaña la URL generada
+        window.open(`http://localhost/facturando/imprimir.php?${queryString}`, '_blank');
+        });
+
+    </script>
+    
+</body>
+</html>
